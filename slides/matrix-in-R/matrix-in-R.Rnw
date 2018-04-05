@@ -1,0 +1,905 @@
+\documentclass[12pt]{beamer}
+\usepackage{tikz}
+
+% make it pretty
+\input{../header.tex}
+
+%------------------------------------------------
+
+\title{Matrices in R}
+\subtitle{Matrix Algebra 4 Statistical Learning}
+\author{\href{http://www.gastonsanchez.com}{Gaston Sanchez}}
+\institute{\href{https://creativecommons.org/licenses/by-sa/4.0/}{\tt \scriptsize \color{foreground} CC BY-SA 4.0}}
+\date{}
+
+\begin{document}
+
+<<setup, include=FALSE>>=
+# smaller font size for chunks
+opts_chunk$set(size = 'footnotesize')
+options(width=87)
+@
+
+% no page number in first slide
+{
+  \setbeamertemplate{footline}{} 
+  \frame{\titlepage} 
+}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Why Matrix Algebra?}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Data Matrix}
+
+\begin{block}{Data}
+The analyzed data can be expressed in matrix format $\mathbf{X}$:
+
+\[ \underset{n \times p}{\mathbf{X}} = 
+\left[\begin{array}{cccc}
+x_{11} & x_{12} & \cdots & x_{1p} \\
+x_{21} & x_{22} & \cdots & x_{2p} \\
+\vdots & \vdots & \ddots & \vdots \\
+x_{n1} & x_{n2} & \cdots & x_{np} \\
+\end{array}\right]
+\]
+\end{block}
+
+\begin{itemize}
+ \item $n$ objects in the rows
+ \item $p$ variables in the columns
+\end{itemize}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Motivation}
+
+\bbi
+  \item Multivariate data is commonly represented in tabular format (rows and columns)
+  \item Mathematically, a data table can be treated as a matrix
+  \item Matrix algebra provides the analytical machinery and tools to
+manipulate and exploit values, information, and patterns of variability in data
+\ei
+
+{\lit In these slides I will cover key concepts about matrix operations with R.}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Vector-Matrix Notation}
+
+\bi
+  \item upper-case italics for variables: $X, Y$
+  \item bold upper-case for matrices: $\mathbf{A}, \mathbf{B}$
+  \item bold lower-case letters for vectors: $\mathbf{x}, \mathbf{y}$
+  \item lower-case italics are used to represent scalars: $a, b$
+  \item $x_i$ is the $i$-th element of $\mathbf{x}$
+  \item $A_{ij}$ is the element in the $i$-th row and $j$-th column of $\mathbf{A}$
+  \item By default, we'll consider a vector $\mathbf{x}$ to be a one-column matrix
+  \item $\mathbf{x}^\mathsf{T}$ to be a one-row matrix
+  \item Occasionally I'll be using some greek letters too
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Two Assumptions}
+
+\centerline{\mdlit \Large I'm assuming 2 things about you:}
+
+\bigskip
+\centerline{\Large Matrix Algebra \quad \& \quad R basics}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Matrix Algebra}
+
+You should have been exposed to concepts such as:
+
+\bi
+  \item Vector Spaces
+  \item Inner Products
+  \item Matrix Multiplication
+  \item Linear Dependency
+  \item Rank
+  \item Trace, Determinant
+  \item Inverse
+  \item \textit{etc}
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{R Basics}
+
+You should have been exposed to:
+
+\bi
+  \item R \code{vector}'s, \code{list}'s, \code{data.frame}'s
+  \item Subscripting and indexing (i.e. bracket notation)
+  \item Writing functions: \code{function() \{...\}}
+  \item Conditionals: \code{if \{...\} else \{...\}}
+  \item Loops: \code{for}, \code{while}, \code{repeat}
+  \item Graphics: base, ggplot2, etc
+  \item RStudio familiarity
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Same but different}
+
+\begin{columns}[t]
+\begin{column}{0.1\textwidth}
+%--- empty space ---%
+\end{column}
+
+\begin{column}{0.4\textwidth}
+{\Large
+{\mdlit Math Objects} \\
+\bi
+  \item vector
+  \item matrix
+\ei
+}
+\end{column}
+
+\pause
+
+\begin{column}{0.4\textwidth}
+{\Large
+{\mdlit R objects} \\
+\bi
+  \item \code{vector}
+  \item \code{matrix}
+\ei
+}
+\end{column}
+
+\begin{column}{0.1\textwidth}
+%--- empty space ---%
+\end{column}
+\end{columns}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Back to the (R) Basics}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{R Vectors}
+
+\bbi
+  \item A vector is the most basic data structure in R
+  \item Vectors are contiguous cells containing data
+  \item Can be of any length (including zero)
+  \item There are really no scalars, just one-element vectors
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Vectors}
+
+The most simple type of vectors are ``scalars'' or single values:
+<<eval = FALSE>>=
+# integer
+x <- 1L
+# double (real)
+y <- 5
+# complex
+z <- 3 + 5i
+# logical
+a <- TRUE
+# character
+b <- "yosemite"
+@
+
+{\lolit although keep in mind that R does NOT really have scalars}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Data modes (i.e. types)}
+
+\bbi
+  \item A \textbf{double} vector stores regular (i.e. real) numbers
+  \item An \textbf{integer} vector stores integers (no decimal component)
+  \item A \textbf{character} vector stores text
+  \item A \textbf{logical} vector stores \code{TRUE}'s and \code{FALSE}'s values
+  \item A \textbf{complex} vector stores complex numbers
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Special Values}
+
+There are some special values 
+\bbi
+  \item \code{NULL} is the null object (it has length zero)
+  \item Missing values are referred to by the symbol \code{NA} \\
+  {\lolit (there are different modes of \code{NA}: logical, integer, etc)}
+  \item \code{Inf} indicates positive infinite
+  \item \code{-Inf} indicates negative infinite
+  \item \code{NaN} indicates Not a Number \\
+  {\lolit (don't confuse \code{NaN} with \code{NA})}
+
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Vectors}
+
+The function to create a vector from individual values is {\hilit \code{c()}}, 
+short for \textit{concatenate} or \textit{combine}:
+
+<<>>=
+# some vectors
+x <- c(1, 2, 3, 4, 5)
+
+y <- c("one", "two", "three")
+
+z <- c(TRUE, FALSE, FALSE)
+@
+Separate each element by a comma
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Atomic Vectors}
+
+\bbi
+  \item vectors are \textbf{atomic} structures
+  \item the values in a vector must be \textbf{ALL} of the same type 
+  \item either all integers, or reals, or complex, or characters, or logicals
+  \item you cannot have a vector of different data types
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Atomic Vectors}
+
+If you mix different data values, R will \textbf{implicitly coerce} them 
+so they are all of the same type
+<<>>=
+# mixing numbers and characters
+x <- c(1, 2, 3, "four", "five")
+x
+# mixing numbers and logical values
+y <- c(TRUE, FALSE, 3, 4)
+y
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{How does R coerce data types?}
+
+\bb{R follows two basic rules of implicit coercion}
+If a character is present, R will coerce everything else to characters
+
+\pause
+\bigskip
+
+If a vector contains logicals and numbers, R will convert the logicals to 
+numbers (\code{TRUE} to 1, \code{FALSE} to 0)
+\eb
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Properties of Vectors}
+
+\bbi
+  \item all vectors have a length
+  \item vector elements can have associated names
+  \item vectors are objects of class \code{"vector"}
+  \item vectors have a mode (storage mode)
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Vectorization}
+
+A vectorized computation is any computation that when applied to a 
+vector operates on all of its elements
+
+<<>>=
+c(1, 2, 3) + c(3, 2, 1)
+
+c(1, 2, 3) * c(3, 2, 1)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Recycling}
+
+When vectorized computations are applied, some problems may occur 
+when dealing with two vectors of different length
+
+<<>>=
+c(1, 2, 3, 4) + c(1, 2)
+
+c(2, 1) + c(1, 2, 3)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Recycling}
+
+The recycling rule can be very useful, like when operating between a vector and a ``scalar''
+
+<<>>=
+x <- c(2, 4, 6, 8)
+x + 3
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{R Matrices and Arrays}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{From Vectors to Arrays}
+
+We can transform a vector in an \textbf{n-dimensional} array by giving it a dimensions attribute \code{dim}
+<<>>=
+# positive: from 1 to 8
+x <- 1:8
+
+# adding 'dim' attribute
+dim(x) <- c(2, 4)
+x
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{From Vectors to Arrays}
+
+\bbi
+  \item a vector can be given a \code{dim} attribute (dimensions)
+  \item a \code{dim} attribute is a numeric vector of length \code{n}
+  \item R will reorganize the elements of the vector into \code{n} dimensions
+  \item each dimension will have as many rows (or columns, etc.) as the \code{n}-th value of the \code{dim} vector
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{From Vectors to Arrays}
+
+<<>>=
+# dim attribute with 3 dimensions
+dim(x) <- c(2, 2, 2)
+x
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{From Vector to Matrix}
+
+A \code{dim} attribute of length 2 will convert a vector into a matrix
+<<>>=
+# vector to matrix
+A <- 1:8
+class(A)
+
+dim(A) <- c(2, 4)
+class(A)
+@
+
+When using \code{dim()}, R always fills up each matrix by columns.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{From Vector to Matrix}
+
+To have more control about how a matrix is filled,
+we use the \code{matrix()} function:
+<<>>=
+# vector to matrix (by rows)
+a <- 1:8
+
+A <- matrix(a, nrow = 2, ncol = 4)
+A
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{From Vector to Matrix}
+
+If you want to fill a matrix by rows use \code{byrow = TRUE}
+<<>>=
+# vector to matrix (by rows)
+b <- 1:8
+
+B <- matrix(b, nrow = 2, ncol = 4, byrow = TRUE)
+B
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{More about R Matrices}
+
+\bbi
+  \item R stores matrices (and arrays in general) as vectors.
+  \item Which means that matrices are also \textbf{atomic} structures.
+  \item Matrices in R are stored column-major (i.e. by columns).
+  \item This is like Fortran, Matlab, and Julia, but not like C or Python (e.g. numpy).
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Matrix: Column-major}
+
+<<>>=
+as.vector(A)
+
+as.vector(B)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Matrices and Vectors in R}
+
+It is important to distinguish vectors and matrices, especially in R:
+\bi
+  \item In matrix algebra we use the convention that vectors are column vectors 
+  (i.e. they are $n \times 1$ matrices).
+  \item In R, a \code{vector} with $n$ elements is not the same as an $n \times 1$ \code{matrix}.
+  \item Vectors in R behave more like ``row vectors'' (especially when displayed).
+  \item However, depending on the type of functions you apply to vectors, sometimes R will handle vectors like if they were column vectors.
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{R common data structures}
+\begin{center}
+\ig[width=8cm]{images/data_structures.pdf}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Matrices vs Dataframes in R}
+
+It's also important to distinguish between matrices and data.frames:
+\bi
+  \item Both objects allow us to store data in a 2-dimensional object.
+  \item In many cases, both R matrices and data.frames have similar behaviors.
+  \item This is mostly the case when they are displayed on the screen.
+  \item And sometimes it is hard to distinguish between a matrix and a data.frame
+  by just looking at the displayed content on the screen.
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Matrices vs Dataframes in R}
+
+\bi
+  \item Dataframes are actually lists.
+  \item Internally, a data.frame is stored as an R list (typically a list of vectors).
+  \item This provides a very flexible way to manipulate data.frames, using 
+  the \code{\$} operator, double brackets\code{[[]]}, and the regular \code{[,]}
+  \item An R matrix is internally stored as a vector (with a \code{dim} attribute).
+  \item Which means that you use the \code{[,]} operator.
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Matrices vs Dataframes in R}
+
+Both matrices and data.frames have common methods
+
+\bi
+  \item bracket notation: {\mdlit \code{[ , ]}}
+  \item dimensions: {\mdlit \code{dim()}}
+  \item number of rows: {\mdlit \code{nrow()}}
+  \item number of columns: {\mdlit \code{ncol()}}
+  \item dim names: {\mdlit \code{dimnames()}}
+  \item names of columns: {\mdlit \code{colnames()}}
+  \item names of rows: {\mdlit \code{rownames()}}
+  \item apply functions: {\mdlit \code{apply()}}
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Notation System}
+
+\bb{Notation system to extract values from R objects}
+\bbi
+  \item to extract values use brackets: \code{[ ]}
+  \item inside the brackets specify indices
+  \item use as many indices as dimensions in the object
+  \item each index is separated by comma
+  \item indices can be numbers, logicals, or names
+\ei
+\eb
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Elements-Extraction Notation System}
+
+\begin{center}
+ \begin{tabular}{l l l}
+  \hline
+   object & notation & example \\
+  \hline
+  vector & \code{[ ]} & \code{v[1:5]} \\  
+  factor & \code{[ ]} & \code{g[1:5]} \\  
+  matrix & \code{[ , ]} & \code{m[1:5, 1:3]} \\  
+  array & \code{[ , , ]} & \code{arr[1, 2, 3]} \\  
+        & \code{[ , , , ]} & \code{arr[1, 2, 3, 4]} \\  
+  list & \code{[ ]} & \code{lst[3]} \\
+       & \code{[[ ]]} & \code{lst[[3]]} \\
+       & \code{\$} & \code{lst\$name} \\
+  data frame & \code{[ , ]} & \code{df[1, 2]} \\
+             & \code{\$} & \code{df\$name} \\
+  \hline
+ \end{tabular}
+\end{center}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Brackets, Parentheses, and Braces in R}
+\begin{center}
+\ig[width=9cm]{images/braces.pdf}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Basic Matrix Operations}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Matrix Operations in R}
+
+We first quickly go through the basic matrix operations in R
+
+\bi
+  \item transpose
+  \item addition
+  \item scalar multiplication
+  \item matrix-vector multiplication
+  \item matrix-matrix multiplication
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Matrix Transpose}
+
+The transpose of a $n \times p$ matrix $\mathbf{X}$ is the $p \times n$ matrix 
+$\mathbf{X}^{\mathsf{T}}$. In R the transpose is given by the function \code{t()}
+
+<<>>=
+# matrix X
+X <- matrix(1:6, 2, 3)
+X
+
+# transpose of X
+t(X)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Matrix Addition}
+
+Matrix addition of two matrices $\mathbf{A} + \mathbf{B}$ is defined when 
+$\mathbf{A}$ and $\mathbf{B}$ have the same dimensions:
+
+<<>>=
+A <- matrix(1:6, 2, 3)
+B <- matrix(7:9, 2, 3)
+A + B
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Scalar Multiplication}
+
+We can multiply a matrix by a scalar using the usual product operator \code{*}, 
+moreover it doesn't matter if we pre-multiply or post-multiply:
+
+<<>>=
+X <- matrix(1:3, 3, 4)
+
+# (pre)multiply X by 0.5
+(1/2) * X
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Scalar Multiplication}
+
+You can also postmultiply by a scalar (although this is not recommended 
+because may confuse readers):
+
+<<>>=
+X <- matrix(1:3, 3, 4)
+
+# (post)multiply X by 0.5
+X * (1/2)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Matrix-Matrix Multiplication}
+
+The matrix product operator in R is {\hilit \code{\%*\%}}. 
+We can multiply matrices $\mathbf{A}$ and $\mathbf{B}$ if the number of columns 
+of $\mathbf{A}$ is equal to the number of rows of $\mathbf{B}$
+
+<<>>=
+A <- matrix(1:6, 2, 3)
+B <- matrix(7:9, 3, 2)
+
+A %*% B
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Matrix-Matrix Multiplication}
+
+We can multiply matrices $\mathbf{A}$ and $\mathbf{B}$ if the number of columns 
+of $\mathbf{A}$ is equal to the number of rows of $\mathbf{B}$
+
+<<>>=
+A <- matrix(1:6, 2, 3)
+B <- matrix(7:9, 3, 2)
+
+B %*% A
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Cross-Products}
+
+A very common type of products in multivariate data analysis are 
+$\mathbf{X^{\mathsf{T}} X}$ and $\mathbf{X X^{\mathsf{T}}}$, sometimes known as 
+cross-products:
+
+\begin{columns}[t]
+\begin{column}{0.45\textwidth}
+
+<<>>=
+# output with return()
+# cross-product
+t(A) %*% A
+@
+\end{column}
+
+\begin{column}{0.45\textwidth}
+<<>>=
+# cross-product
+A %*% t(A)
+@
+\end{column}
+\end{columns}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Cross-Products}
+
+R provides functions {\hilit \code{crossprod()}} and {\hilit \code{tcrossprod()}} 
+which are formally equivalent to:
+
+\bbi
+  \item \code{crossprod(X, X)} $\equiv$ \code{t(X) \%*\% X}
+  \item \code{tcrossprod(X, X)} $\equiv$ \code{X \%*\% t(X)}
+\ei
+
+However, \code{crossprod()} and \code{tcrossprod()} are usually faster than using 
+\code{t()} and \code{\%*\%}
+
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Matrix-Vector Multiplication}
+
+We can post-multiply an $n \times p$ matrix $\mathbf{X}$ with a vector 
+$\mathbf{b}$ with $p$ elements. This means making linear combinations 
+(weighted sums) of the columns of $\mathbf{X}$:
+
+<<>>=
+X <- matrix(1:12, 3, 4)
+b <- seq(0.25, 1, by = 0.25)
+X %*% b
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Vector-Matrix Multiplication}
+
+In R we can pre-multiply a vector $\mathbf{a}$ (with $n$ elements) with an $n \times p$ 
+matrix $\mathbf{X}$. This means making linear combinations (weighted sums) of 
+the rows of $\mathbf{X}$:
+
+<<>>=
+X <- matrix(1:12, 3, 4)
+a <- 1:3
+a %*% X
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Note about \code{\%*\%}}
+
+Notice that when we use the product operator \code{\%*\%}, R is smart enough to use 
+the convention that vectors are $n \times 1$ matrices.
+
+Notice also that if we ask for a vector-matrix multiplication, we can use both
+formulas:
+
+\bi
+  \item \code{a \%*\% X}
+  \item \code{t(a) \%*\% X}
+\ei
+
+R will reformat the $n$ vector as an $n \times 1$ matrix first.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Other Functions}
+
+Here are some other interesting functions for matrices
+
+\bi
+  \item {\mdlit \code{det()}}: determinant
+  \item {\mdlit \code{diag()}}: extract or replace the diagonal elements
+  \item {\mdlit \code{solve()}}: solve system of equations
+  \item {\mdlit \code{svd()}}: singular value decomposition
+  \item {\mdlit \code{eigen()}}: eigen-decomposition
+  \item {\mdlit \code{qr()}}: QR decomposition
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\end{document}
