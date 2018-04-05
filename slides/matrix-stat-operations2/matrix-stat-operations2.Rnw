@@ -1,0 +1,915 @@
+\documentclass[12pt]{beamer}
+\usepackage{tikz}
+
+% make it pretty
+\input{../header.tex}
+
+%------------------------------------------------
+
+\title{Statistical Operations and Matrices (II)}
+\subtitle{Matrix Algebra 4 Statistical Learning}
+\author{\href{http://www.gastonsanchez.com}{Gaston Sanchez}}
+\institute{\href{https://creativecommons.org/licenses/by-sa/4.0/}{\tt \scriptsize \color{foreground} CC BY-SA 4.0}}
+\date{}
+
+\begin{document}
+
+<<setup, include=FALSE>>=
+# smaller font size for chunks
+opts_chunk$set(size = 'footnotesize')
+options(width=87)
+library(ggplot2)
+@
+
+% no page number in first slide
+{
+  \setbeamertemplate{footline}{} 
+  \frame{\titlepage} 
+}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Geometry of the Data Matrix}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Matrix Structure}
+
+\begin{block}{Data}
+The analyzed data can be expressed in matrix format $\mathbf{X}$:
+
+\[ \underset{n \times p}{\mathbf{X}} = 
+\left[\begin{array}{cccc}
+x_{11} & x_{12} & \cdots & x_{1p} \\
+x_{21} & x_{22} & \cdots & x_{2p} \\
+\vdots & \vdots & \ddots & \vdots \\
+x_{n1} & x_{n2} & \cdots & x_{np} \\
+\end{array}\right]
+\]
+\end{block}
+
+\begin{itemize}
+ \item $n$ objects in the rows
+ \item $p$ quantitative variables in the columns
+\end{itemize}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Looking at Rows \\ and Columns}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Data Concerns}
+
+\begin{columns}[t]
+\begin{column}{0.1\textwidth}
+%--- empty space ---%
+\end{column}
+
+\begin{column}{0.8\textwidth}
+\bb{Two sides of the same coin}
+When the analyzed data can be expressed as a matrix with objects in rows, and variables in columns, we commonly care for two issues:
+\bi
+ \item Study the {\hilit resemblance between objects}
+ \item Study the {\hilit relationships among variables}
+\ei
+\eb
+\end{column}
+
+\begin{column}{0.1\textwidth}
+%--- empty space ---%
+\end{column}
+\end{columns}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Data Perspectives}
+\begin{center}
+\ig[width=10cm]{images/duality_data_matrix.pdf}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Objects Perspective}
+\begin{center}
+\ig[width=11cm]{images/duality_column_space.pdf}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{}
+\begin{center}
+\ig[width=11cm]{images/duality_objects_cloud.pdf}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Variables Perspective}
+\begin{center}
+\ig[width=11cm]{images/duality_row_space.pdf}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{}
+\begin{center}
+\ig[width=11cm]{images/duality_variables_cloud.pdf}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Raw Data}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Raw Data Matrix}
+
+The analyzed data can be expressed in matrix format $\mathbf{X}$:
+
+\[ \underset{n \times p}{\mathbf{X}} = 
+\left[\begin{array}{cccc}
+x_{11} & x_{12} & \cdots & x_{1p} \\
+x_{21} & x_{22} & \cdots & x_{2p} \\
+\vdots & \vdots & \ddots & \vdots \\
+x_{n1} & x_{n2} & \cdots & x_{np} \\
+\end{array}\right]
+\]
+
+\begin{itemize}
+ \item $n$ objects in the rows
+ \item $p$ quantitative variables in the columns
+\end{itemize}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Data set \code{mtcars}}
+
+First 10 rows:
+<<mtcars, size = 'scriptsize', echo = FALSE, comment = ''>>=
+mtcars[1:10, ]
+@
+
+Let's use variables: \code{mpg}, \code{disp}, \code{hp}, and \code{wt}.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+
+<<echo = FALSE>>=
+num_obs <- nrow(mtcars)
+variables <- rep(c('mpg', 'disp', 'hp', 'wt'), each = num_obs)
+values_raw <- c(mtcars$mpg, mtcars$disp, mtcars$hp, mtcars$wt)
+centers <- colMeans(mtcars)
+stdevs <- apply(mtcars, 2, sd)
+
+tbl_raw <- data.frame(values = values_raw, variables)
+@
+
+<<echo = FALSE, fig.width=7, fig.height=5, fig.align='center'>>=
+ggplot(data = tbl_raw, aes(x = variables, y = values)) + 
+  geom_jitter(width = 0.2) + 
+  ggtitle('Raw values: different means, different std-devs')
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+
+<<echo = FALSE, fig.width=7, fig.height=5, fig.align='center'>>=
+boxplot(values ~ variables, data = tbl_raw, range = 0, las = 1,
+        main = "Raw values")
+abline(h = 0, col = "gray70", lwd = 2)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Centering Data Matrix}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Mean-Centered Data Matrix}
+
+A common operation consists of {\hilit \textbf{centering}} the data, which involves
+mean-centering the variables so that they all have mean zero.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Mean-Centered Data Matrix}
+
+The mean-centered (a.k.a. column centered) matrix $\mathbf{X_C}$:
+
+\[ \underset{n \times p}{\mathbf{X_C}} = 
+\left[\begin{array}{cccc}
+x_{11} - \bar{x}_1 & x_{12} - \bar{x}_2 & \cdots & x_{1p} - \bar{x}_p \\
+x_{21} - \bar{x}_1 & x_{22} - \bar{x}_2 & \cdots & x_{2p} - \bar{x}_p \\
+\vdots & \vdots & \ddots & \vdots \\
+x_{n1} - \bar{x}_1 & x_{n2} - \bar{x}_2 & \cdots & x_{np} - \bar{x}_p \\
+\end{array}\right]
+\]
+
+where $\bar{x}_j$ is the mean of the $j$-th variable ($j = 1, \dots, p$)
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Mean-Centered Data Matrix}
+
+Using matrix notation, the centering operation is expressed as:
+
+$$
+\mathbf{X_C} = (\mathbf{I} - \frac{1}{n} \mathbf{11^\mathsf{T}}) \mathbf{X} 
+$$
+
+\bi
+  \item $\mathbf{I}$ is the $n \times n$ identity matrix
+  \item $\mathbf{1}$ is an $n \times 1$ vector of ones
+\ei
+
+\bigskip
+{\mdlit $\mathbf{I} - \frac{1}{n} \mathbf{11^\mathsf{T}}$} is sometimes called the 
+{\mdlit \textit{centering}} operator
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Centering Effects}
+
+{\large What does mean-centering do to the cloud of points?}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+
+<<echo = FALSE>>=
+mtcentered <- sweep(mtcars, 2, centers)
+values_centered <- with(mtcentered, c(mpg, disp, hp, wt))
+tbl_centered <- data.frame(values = values_centered, variables)
+@
+
+<<echo = FALSE, fig.width=7, fig.height=5, fig.align='center'>>=
+ggplot(data = tbl_centered, aes(x = variables, y = values)) + 
+  geom_hline(yintercept = 0, col = "gray70") +
+  geom_jitter(width = 0.2) + 
+  ggtitle('Centered: mean = 0, different std-devs')
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+
+<<echo = FALSE, fig.width=7, fig.height=5, fig.align='center'>>=
+boxplot(values ~ variables, data = tbl_centered, range = 0, las = 1,
+        main = "Centered values")
+abline(h = 0, col = "gray70", lwd = 2)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Centering Matrices in R}
+
+Centering with \code{scale()}
+
+<<eval=FALSE>>=
+X_centered <- scale(X, center = TRUE, scale = FALSE)
+@
+
+Or also like this:
+<<eval=FALSE>>=
+centroid <- colMeans(X)
+X_centered <- sweep(X, 2, centroid, FUN = "-")
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Cloud of individuals}
+\begin{center}
+\ig[height=7cm]{images/cloud_obs_centering1.pdf}
+
+{\lolit Raw (i.e. non-centered) variables}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Cloud of individuals}
+\begin{center}
+\ig[height=7cm]{images/cloud_obs_centering2.pdf}
+
+{\lolit Centered variables}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Scaled Data Matrix}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Scaled or Normalized Data Matrix}
+
+The scaled or \textit{Normalized} matrix $\mathbf{X_N}$:
+
+\[ \underset{n \times p}{\mathbf{X_N}} = 
+\left[\begin{array}{cccc}
+a_1 x_{11} & a_2 x_{12} & \cdots & a_p x_{1p} \\
+a_1 x_{21} & a_2 x_{22} & \cdots & a_p x_{2p} \\
+\vdots & \vdots & \ddots & \vdots \\
+a_1 x_{n1} & a_2 x_{n2} & \cdots & a_p x_{np} \\
+\end{array}\right]
+\]
+
+where $a_j$ is a scaling factor for the $j$-th column
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Some Scaling Options}
+
+Probably the most common scaling option is to divide by the standard deviation:
+
+$$
+a_j = \frac{1}{sd_j} = 1 / \sqrt{\frac{1}{n-1} \sum_{i=1}^{n} (x_{ij} - \bar{x}_j)^2}
+$$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Scaling Matrices in R}
+
+Scaling with standard deviation
+
+<<eval=FALSE>>=
+stdevs <- apply(X, 2, sd)
+
+X_scaled <- scale(X, center = FALSE, scale = stdevs)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+
+<<echo = FALSE>>=
+mtscaled <- sweep(mtcars, 2, stdevs, FUN = '/')
+values_scaled <- with(mtscaled, c(mpg, disp, hp, wt))
+tbl_scaled <- data.frame(values = values_scaled, variables)
+@
+
+<<echo = FALSE, fig.width=7, fig.height=5, fig.align='center'>>=
+ggplot(data = tbl_scaled, aes(x = variables, y = values)) + 
+  geom_jitter(width = 0.2) + 
+  ggtitle('Scaled: different means, scale with std-dev = 1')
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+
+<<echo = FALSE, fig.width=7, fig.height=5, fig.align='center'>>=
+boxplot(values ~ variables, data = tbl_scaled, range = 0, las = 1,
+        main = "Scaled values")
+abline(h = 0, col = "gray70", lwd = 2)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Some Scaling Options}
+
+Other typical scaling options are based on $L_p$-norms:
+$$
+L_p\text{-norm = } \left ( \sum_{i=1}^{n} |x_{ij}|^p \right )^{1/p}
+$$
+
+\bigskip
+The most common $L_p$-norms are:
+\bbi
+  \item $L_1$-norm: $\sum_{i=1}^{n} | x_{ij} |$
+  \item $L_2$-norm: $\sqrt{\sum_{i=1}^{n} (x_{ij})^2}$
+  \item $L_{\infty}$-norm: $max \{ |x_{i1}|, \dots, |x_{ip}| \}$
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Some Scaling Options}
+
+Using $L_p$-norms, the scaling factors $a_j$ are:
+
+\bbi
+  \item $L_1$-norm: $\quad a_j = 1 / \sum_{i=1}^{n} | x_{ij} |$
+  \item $L_2$-norm: $\quad a_j = 1 / \sqrt{\sum_{i=1}^{n} (x_{ij})^2}$
+  \item $L_{\infty}$-norm: $\quad a_j = 1 / max \{ |x_{i1}|, \dots, |x_{ip}| \}$
+  \item $L_p$-norm: $\quad a_j = 1 / \left ( \sum_{i=1}^{n} |x_{ij}|^p \right )^{1/p}$
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Scaled or Normalized Data Matrix}
+
+The scaling factors $a_j$ can be put in a diagonal matrix $\mathbf{D_a}$
+
+\[ \underset{p \times p}{\mathbf{D_a}} = 
+\left[\begin{array}{cccc}
+a_1 & 0   & \cdots & 0 \\
+0   & a_2 & \cdots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0   & 0   & \cdots & a_p \\
+\end{array}\right]
+\]
+
+then the scaled or normalized data matrix is given by:
+
+{\large
+$$
+\mathbf{X_N} = \mathbf{X D_a}
+$$
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Normalizing Effects}
+
+What does normalizing (i.e. scaling) do to the cloud of points?
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Scaling Matrices in R}
+
+Scaling with $L_1$-norm:
+
+$$
+\sum_{i=1}^{n} | x_{ij} |
+$$
+
+<<eval=FALSE>>=
+# L-1 norm
+one_norms <- apply(X, 2, function(u) sum(abs(u)))
+
+X_scaled <- scale(X, center = FALSE, scale = one_norms)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+
+<<echo = FALSE>>=
+one_norms <- apply(mtcars, 2, function(u) sum(abs(u)))
+mt_one_norms <- sweep(mtcars, 2, one_norms, FUN = '/')
+values_scaled <- with(mt_one_norms, c(mpg, disp, hp, wt))
+tbl_scaled <- data.frame(values = values_scaled, variables)
+@
+
+<<echo = FALSE, fig.width=7, fig.height=5, fig.align='center'>>=
+ggplot(data = tbl_scaled, aes(x = variables, y = values)) + 
+  geom_jitter(width = 0.2) + 
+  ggtitle('Scaled: different means, scaled with L1-norm')
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Scaling in R examples}
+
+Scaling with $L_2$-norm
+
+$$
+\sqrt{\sum_{i=1}^{n} (x_{ij})^2}
+$$
+
+<<eval=FALSE>>=
+# L-2 norm
+two_norms <- apply(X, 2, function(u) sqrt(sum(u*u)))
+
+X_scaled <- scale(X, center = FALSE, scale = two_norms)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+
+<<echo = FALSE>>=
+two_norms <- apply(mtcars, 2, function(u) sqrt(sum(u*u)))
+mt_two_norms <- sweep(mtcars, 2, two_norms, FUN = '/')
+values_scaled <- with(mt_two_norms, c(mpg, disp, hp, wt))
+tbl_scaled <- data.frame(values = values_scaled, variables)
+@
+
+<<echo = FALSE, fig.width=7, fig.height=5, fig.align='center'>>=
+ggplot(data = tbl_scaled, aes(x = variables, y = values)) + 
+  geom_jitter(width = 0.2) + 
+  ggtitle('Scaled: different means, scaled with L2-norm')
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Scaling Matrices in R}
+
+Scaling with $L_{\infty}$-norm
+$$
+max \{ |x_{i1}|, \dots, |x_{ip}| \}
+$$
+
+<<eval=FALSE>>=
+# L-inf norm
+inf_norms <- apply(X, 2, function(u) max(abs(u)))
+
+X_scaled <- scale(X, center = FALSE, scale = inf_norms)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+
+<<echo = FALSE>>=
+inf_norms <- apply(mtcars, 2, function(u) max(abs(u)))
+mt_inf_norms <- sweep(mtcars, 2, inf_norms, FUN = '/')
+values_scaled <- with(mt_inf_norms, c(mpg, disp, hp, wt))
+tbl_scaled <- data.frame(values = values_scaled, variables)
+@
+
+<<echo = FALSE, fig.width=7, fig.height=5, fig.align='center'>>=
+ggplot(data = tbl_scaled, aes(x = variables, y = values)) + 
+  geom_jitter(width = 0.2) + 
+  ggtitle('Scaled: different means, scaled with Lmax-norm')
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Standardized Data Matrix}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Standardized Data Matrix}
+
+The standardized matrix $\mathbf{X_S}$ is the mean-centered and scaled 
+(by the standard deviation) matrix:
+
+\[ \underset{n \times p}{\mathbf{X_S}} = 
+\left[\begin{array}{cccc}
+\frac{x_{11} - \bar{x}_1}{sd_1} & \frac{x_{12} - \bar{x}_2}{sd_2} & \cdots & \frac{x_{1p} - \bar{x}_p}{sd_p} \\
+\frac{x_{21} - \bar{x}_1}{sd_1} & \frac{x_{22} - \bar{x}_2}{sd_2} & \cdots & \frac{x_{2p} - \bar{x}_p}{sd_p} \\
+\vdots & \vdots & \ddots & \vdots \\
+\frac{x_{n1} - \bar{x}_1}{sd_1} & \frac{x_{n2} - \bar{x}_2}{sd_2} & \cdots & \frac{x_{np} - \bar{x}_p}{sd_p} \\
+\end{array}\right]
+\]
+
+\bi
+  \item $\bar{x}_j$ is the mean of the $j$-th variable
+  \item $sd_j$ is the standard deviation of the $j$-th variable
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+
+<<echo = FALSE>>=
+mtstandard <- sweep(mtcentered, 2, stdevs, FUN = '/')
+values_standard <- with(mtstandard, c(mpg, disp, hp, wt))
+tbl_standard <- data.frame(values = values_standard, variables)
+@
+
+<<echo = FALSE, fig.width=7, fig.height=5, fig.align='center'>>=
+ggplot(data = tbl_standard, aes(x = variables, y = values)) + 
+  geom_hline(yintercept = 0, col = "gray70") +
+  geom_jitter(width = 0.2, alpha = 0.8) + 
+  ggtitle('Standardized: mean = 0, and std-dev = 1')
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+
+<<echo = FALSE, fig.width=7, fig.height=5, fig.align='center'>>=
+boxplot(values ~ variables, data = tbl_standard, range = 0, las = 1,
+        main = "Standardized values")
+abline(h = 0, col = "gray70", lwd = 2)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Standardized Data Matrix}
+
+When the scaling factors $a_j$ are the standard deviations $sd_j$, 
+the scaling matrix $\mathbf{D}_{\frac{1}{sd}}$ is:
+
+\[ \underset{p \times p}{\mathbf{D}_{\frac{1}{sd}}} = 
+\left[\begin{array}{cccc}
+\frac{1}{sd_1} & 0 & \cdots & 0 \\
+0 & \frac{1}{sd_2} & \cdots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \cdots & \frac{1}{sd_p} \\
+\end{array}\right]
+\]
+
+then the standardized data matrix $\mathbf{X_S}$
+$$
+\mathbf{X_S} = \mathbf{X_C} \mathbf{D}_{\frac{1}{sd}} = (\mathbf{I} - \frac{1}{n} \mathbf{11^\mathsf{T}}) \mathbf{X} \mathbf{D}_{\frac{1}{sd}}
+$$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Standardizing Matrices in R}
+
+Standardizing with \code{scale()}
+
+<<eval=FALSE>>=
+X_std <- scale(X, center = TRUE, scale = TRUE)
+
+# equivalent to
+X_std <- scale(X)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Objects and their weights}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Weights of Objects}
+
+\bi
+  \item We can assume that each object is associated to a \textbf{weight}
+  \item Think of a weight as the ``importance'' of an observation
+  \item Usually, we assume equal weights $1/n$ (i.e. equal importance)
+  \item If we assume that objects come from a random sample, then 
+  the $n$ objects have the same chance $1/n$ of being selected
+  \item Sometimes, however, it is convenient to assume that each object
+  has a general weight $w_i > 0$, such that $\sum_{i=1}^{n} w_i = 1$
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Weights of Objects}
+
+We can consider a diagonal matrix of object weights $\mathbf{D}$:
+
+\[ \underset{n \times p}{\mathbf{D}} = 
+\left[\begin{array}{cccc}
+w_1 & 0 & \cdots & 0 \\
+0 & w_2 & \cdots & 0 \\
+\vdots & \vdots & \ddots & \vdots \\
+0 & 0 & \cdots & w_n \\
+\end{array}\right]
+\]
+
+In the more common case that all weights are equal, we have $\mathbf{D} = \frac{1}{n} \mathbf{I}$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Weights of Objects}
+
+The vector $\mathbf{g}$ containing the means $\bar{X}_1, \bar{X}_2, \dots, \bar{X}_p$ 
+of all variables can be written as:
+$$
+\mathbf{g} = \mathbf{X^\mathsf{T} D 1_n}
+$$
+
+where $\mathbf{1_n}$ is an $n \times 1$ vector of ones.
+
+\bigskip
+The vector $\mathbf{g}$ is also known as the \textbf{centroid} of the objects.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Centered Data Matrix}
+
+Using $\mathbf{D}$ and $\mathbf{g}$ we can write an expression
+to get a centered data matrix $\mathbf{\tilde{X}}$
+
+$$
+\mathbf{\tilde{X}} = \mathbf{X - 1 g^\mathsf{T}} = (\mathbf{I - 1 1^\mathsf{T} D}) \mathbf{X}
+$$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Cross-Products}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Data Matrix Products}
+
+There are {\hilit two fundamental matrix products} that play a crucial role when the data 
+is in an $n \times p$ matrix $X$ with objects in rows, and variables in columns 
+(assume $n > p$):
+
+\bigskip
+{\Large
+\centerline{$\mathbf{X^\mathsf{T} X}$ \quad \& \quad $\mathbf{X X^\mathsf{T}}$}
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Minor Product Moment}
+
+{\Large
+$$
+\mathbf{X^\mathsf{T} X}
+$$ 
+}
+
+\bi
+  \item a.k.a. ``minor product moment'' \\
+  {\lolit (because is of size $p \times p$, assuming $n > p$)}
+  \item sum-of-squares and cross-products (SSCP) of columns
+  \item made of inner products of the columns of $\mathbf{X}$
+  \item \textit{association} matrix for the variables
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Major Product Moment}
+
+{\Large
+$$
+\mathbf{X X^\mathsf{T}}
+$$ 
+}
+
+\bi
+  \item a.k.a. ``major product moment'' \\
+  {\lolit (because is of size $n \times n$, assuming $n > p$)}
+  \item sum-of-squares and cross-products of rows
+  \item made of inner products of the rows of $\mathbf{X}$
+  \item association matrix for the objects
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Covariance Matrix}
+
+If $\mathbf{X}$ is mean-centered, then
+{\large
+$$
+\frac{1}{n} \mathbf{X^\mathsf{T} X}  \qquad \text{and} \qquad \frac{1}{n-1} \mathbf{X^\mathsf{T} X}
+$$ 
+}
+are the covariance matrices (population and sample flavors)
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Correlation Matrix}
+
+If $\mathbf{X}$ is standardized, then
+{\large
+$$
+\frac{1}{n} \mathbf{X^\mathsf{T} X}  \qquad \text{and} \qquad \frac{1}{n-1} \mathbf{X^\mathsf{T} X}
+$$ 
+}
+are the correlation matrices (population and sample flavors)
+
+
+\end{frame}
+
+%------------------------------------------------
+
+\end{document}
