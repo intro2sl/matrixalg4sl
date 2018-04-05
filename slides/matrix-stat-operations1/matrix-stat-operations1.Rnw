@@ -1,0 +1,572 @@
+\documentclass[12pt]{beamer}
+\usepackage{tikz}
+
+% make it pretty
+\input{../header.tex}
+
+%------------------------------------------------
+
+\title{Statistical Operations and Matrices (I)}
+\subtitle{Matrix Algebra 4 Statistical Learning}
+\author{\href{http://www.gastonsanchez.com}{Gaston Sanchez}}
+\institute{\href{https://creativecommons.org/licenses/by-sa/4.0/}{\tt \scriptsize \color{foreground} CC BY-SA 4.0}}
+\date{}
+
+\begin{document}
+
+<<setup, include=FALSE>>=
+# smaller font size for chunks
+opts_chunk$set(size = 'footnotesize')
+options(width=87)
+@
+
+% no page number in first slide
+{
+  \setbeamertemplate{footline}{} 
+  \frame{\titlepage} 
+}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Vector-Matrix Notation \\ for Statistical Operations}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Motivation}
+
+I want to discuss how we can use vector-matrix notation to represent
+some basic statistical operations and summaries.
+
+\bigskip
+First we need to quickly review some concepts around inner products.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Inner Product}
+
+The inner product of two vectors $\mathbf{x}$ and $\mathbf{y}$---of the same size---is defined as:
+
+{\Large
+$$
+\langle \mathbf{x}, \mathbf{y} \rangle = \mathbf{x^{\mathsf{T}} y} = \sum_i x_i y_i
+$$
+}
+
+basically the inner product consists of the element-by-element product of 
+$\mathbf{x}$ and $\mathbf{y}$, and then adding everything up. The result is not 
+another vector but a single number, a scalar. 
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Inner Product}
+
+We can also write the inner product $\langle \mathbf{x}, \mathbf{y} \rangle$ in 
+vector notation as:
+
+$$
+\mathbf{x^\mathsf{T} y} = (x_1 \dots x_n) 
+\begin{pmatrix} 
+y_1 \\
+\vdots \\
+y_n
+\end{pmatrix}
+= \sum_{i = 1}^{n} x_i y_i
+$$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Inner Product}
+
+Keep in mind that inner products can be generalized to any type of 
+metric $\mathbf{M}$ matrix:
+
+{\Large
+$$
+\langle \mathbf{x}, \mathbf{y} \rangle_{M} = \mathbf{x^{\mathsf{T}} M y}
+$$
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Inner Product}
+
+Having an inner space endowed with an inner product, we can derive other concepts such as:
+
+\bbi
+  \item \textbf{Length} of a vector (and \textit{norms} in general)
+  \item \textbf{Distance} between points
+  \item \textbf{Angle} between vectors
+  \item \textbf{Projection} of vectors
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Length}
+
+Another important usage of the inner product is that it allows us to define the 
+\textbf{length} of a vector $\mathbf{x}$ denoted by:
+
+{\Large
+$$
+\| \mathbf{x} \| = \sqrt{\mathbf{x^\mathsf{T} x}}
+$$
+}
+
+which is typically known as the (Euclidean) \textbf{norm} of a vector. \\
+{\lolit (There are actually other types of norms)}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Length}
+
+The inner product of a vector with itself is equal to 
+its squared norm: $\mathbf{x^\mathsf{T} x} = \| \mathbf{x} \|^2$
+
+{\Large
+$$
+\| \mathbf{x} \|^2 = \sum_{i=1}^{n} x_{i}^{2}
+$$
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Distance}
+
+The square (Eculidean) distance between two vectors $\mathbf{x}$ and $\mathbf{y}$ 
+can be obtained as:
+
+{\large
+$$
+d^{2} (\mathbf{x}, \mathbf{y}) = \| \mathbf{x} - \mathbf{y} \|^2 = 
+(\mathbf{x-y})^{\mathsf{T}}(\mathbf{x-y})
+$$
+}
+
+\pause
+\bigskip
+The distance between two vectors $\mathbf{x}$ and $\mathbf{y}$ can be obtained as:
+
+{\large
+$$
+d(\mathbf{x}, \mathbf{y}) = \| \mathbf{x} - \mathbf{y} \| = \sqrt{(\mathbf{x-y})^{\mathsf{T}}(\mathbf{x-y})}
+$$
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Angle between Vectors}
+
+The \textbf{angle} $\theta$ between two nonzero vectors 
+$\mathbf{x, y}$ can also be expressed using inner products:
+
+{\Large
+$$
+cos(\theta) = \frac{\mathbf{x^\mathsf{T} y}}{\sqrt{\mathbf{x^\mathsf{T} x}} \hspace{1mm} \sqrt{\mathbf{y^\mathsf{T} y}}}
+= \frac{\mathbf{x^\mathsf{T} y}}{\| \mathbf{x} \| \hspace{1mm} \| \mathbf{y} \|}
+$$
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Angle}
+
+Equivalently, we can reexpress the formula of the inner product using 
+
+{\Large
+$$
+\mathbf{x^\mathsf{T} y} = \| \mathbf{x} \| \hspace{1mm} \| \mathbf{y} \| \hspace{1mm} cos(\theta)
+$$
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Orthogonality}
+
+Besides calculating lengths of vectors and angles between vectors, an inner 
+product allows us to know whether two vectors are orthogonal. 
+
+\bigskip
+In a two dimensional space, orthogonality is equivalent to perpendicularity; 
+so if two vectors are perpendicular to each 
+other---the angle between them is a 90 degree angle---they are orthogonal. 
+
+
+\bigskip
+Two vectors vectors $\mathbf{x}$ and $\mathbf{y}$ 
+are orthogonal if their inner product is zero:
+
+$$
+\mathbf{x^\mathsf{T} y} = 0 \quad \iff \quad \mathbf{x} \hspace{1mm} \bot \hspace{1mm} \mathbf{y} 
+$$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Projection}
+
+The last aspect I want to touch related with the inner product is the so-called 
+projections. More specifically: orthogonal projection of a 
+vector $\mathbf{y}$ onto another vector $\mathbf{x}$. 
+
+\bigskip
+The basic notion of projection requires two ingredients: two vectors, 
+$\mathbf{x}$ and $\mathbf{y}$. To obtain the projection of $\mathbf{y}$ onto 
+$\mathbf{x}$, we need to express $\mathbf{x}$ in unit norm.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Unit Vector}
+
+Recall that a \textbf{unit vector} is a vector of length 1, sometimes 
+also called a \textit{direction} or \textit{unitary} vector.
+
+\bigskip
+In other words, if $\mathbf{v}$ is a unit vector, this means that $\| \mathbf{v} \| = 1$. 
+
+\bigskip
+{\lit Given a non-zero vector $\mathbf{v}$, how do we get a unit vector?}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Unit Vector}
+
+Given a non-zero vector $\mathbf{v}$, you can get a unit vector $\mathbf{u}$ by dividing 
+$\mathbf{v}$ by its norm, that is:
+
+{\Large
+$$
+\mathbf{u} = \frac{\mathbf{v}}{\| \mathsf{v} \|} = \frac{\mathbf{v}}{\mathbf{\sqrt{v^{\mathsf{T}} v}}}
+$$
+}
+
+Some say that we ``normalize $\mathbf{v}$''
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Projection}
+
+Having two nonzero 
+vectors $\mathbf{x}$ and $\mathbf{y}$, we can project $\mathbf{y}$ on 
+$\mathbf{x}$, denoted by $\hat{\mathbf{y}}$ as:
+
+{\Large
+$$
+\hat{\mathbf{y}} = \mathbf{x} \left( \frac{\mathbf{y^\mathsf{T} x}}{\mathbf{x^\mathsf{T} x}} \right)
+$$
+}
+
+Note that the term in parenthesis is just a scalar.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Projection}
+
+Note that
+
+{\large
+$$
+\hat{\mathbf{y}} = \mathbf{x} \left( \frac{\mathbf{y^\mathsf{T} x}}{\mathbf{x^\mathsf{T} x}} \right) = \mathbf{x} \left( \frac{\mathbf{x^\mathsf{T} y}}{\mathbf{x^\mathsf{T} x}} \right)
+$$
+}
+
+can also be written as:
+
+{\large
+$$
+\hat{\mathbf{y}} = \mathbf{x} (\mathbf{x^\mathsf{T} x})^{-1} \mathbf{x^\mathsf{T} y} 
+$$
+}
+
+\begin{center}
+{\lit Does it look familiar?}
+\end{center}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Orthogonal Projection}
+\begin{center}
+\ig[width=8cm]{images/orthogonal-projection.png}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Projection}
+
+We can actually express $\hat{\mathbf{y}}$ as $a \mathbf{x}$. This means that a projection implies 
+multiplying $\mathbf{x}$ by some number $a$, such that
+$\hat{\mathbf{y}} = a \mathbf{x}$ is a stretched or shrinked version of $\mathbf{x}$.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Inner Products ... So what?}
+
+We'll see in a moment how many statistical summaries can be represented 
+with inner products.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Review of Some \\ Statistical Operations}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Statistical Summaries}
+
+I want to review basic statistical summaries and see how we can express them
+in vector-matrix notation:
+
+\bbi
+  \item Sum of values
+  \item Sum of squared values
+  \item Mean
+  \item Variance  
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Sum of Values}
+
+Consider a variable $X \in \mathbb{R}^n$ represented with a vector 
+$\mathbf{x} = (x_1, x_2, \dots, x_n)$
+
+\bigskip
+A common operation consists of adding the elements of the vector
+$$
+\sum_{i=1}^{n} x_i
+$$
+
+\pause
+\bigskip
+This sum can be expressed in vector notation as:
+$$
+\sum_{i=1}^{n} x_i = \mathbf{x^{\mathsf{T}} 1} = \mathbf{1^{\mathsf{T}} x}
+$$
+where $\mathbf{1}$ is a vector of $n$ elements equal to 1
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Mean}
+
+The (arithmetic) mean of $X$ is
+$$
+\bar{x} = \frac{1}{n} \sum_{i=1}^{n} x_i
+$$
+
+\pause
+\bigskip
+Using vector notation the mean is expressed as:
+$$
+\bar{x} = \frac{1}{n} \mathbf{x^{\mathsf{T}} 1}
+$$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Sum of Square dValues}
+
+Another common operation is the sum of squared values
+$$
+\sum_{i=1}^{n} x_{i}^{2}
+$$
+
+\pause
+\bigskip
+Using vector notation this sum can be written as an inner product:
+$$
+\sum_{i=1}^{n} x_{i}^{2} = \mathbf{x^{\mathsf{T}} x} = \| \mathsf{x} \|^2
+$$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Variance}
+
+The variance of $X$ {\lolit (in its population version)}
+$$
+var(X) = \frac{1}{n} \sum_{i=1}^{n} (x_i - \bar{x})^2
+$$
+
+\bi
+  \item Let $\mathbf{\bar{x}}$ be an $n$-element vector constant of $\bar{x}$ values
+  \item Let $\mathbf{\tilde{x}} = \mathbf{x} - \mathbf{\bar{x}}$
+\ei
+
+\pause
+\bigskip
+The variance can be expressed as:
+$$
+var(X) = \frac{1}{n} \mathbf{\tilde{x}^{\mathsf{T}} \tilde{x}}
+$$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Variance}
+
+If you consider the ``sample'' variance
+$$
+var(X) = \frac{1}{n-1} \sum_{i=1}^{n} (x_i - \bar{x})^2
+$$
+
+\bigskip
+Then:
+$$
+var(X) = \frac{1}{n-1} \mathbf{\tilde{x}^{\mathsf{T}} \tilde{x}}
+$$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Variance}
+
+\bi
+  \item I will sometimes consider $\mathbf{x}$ to be mean-centered.
+  \item This means that $\bar{x}$ has already been subtracted from each element $x_i$
+\ei
+
+In this case the variance can be compactly expressed as:
+$$
+var(X) = \frac{1}{n} \mathbf{x^{\mathsf{T}} x}
+$$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Covariance}
+
+Consider two variables $X$ and $Y$. The covariance $cov(X,Y)$
+$$
+cov(X,Y) = \frac{1}{n} \sum_{i=1}^{n} (x_i - \bar{x})(y_i - \bar{y})
+$$
+
+\pause
+Assuming that $X$ and $Y$ are mean-centered, and represented by 
+$\mathbf{x}$ and $\mathbf{y}$, respectively, the covariance can be expressed as:
+
+{\large
+$$
+cov(\mathbf{x}, \mathbf{y}) = \frac{1}{n} \mathbf{x^{\mathsf{T}} y}
+$$
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Correlation}
+
+Consider two variables $X$ and $Y$. The correlation $cor(X,Y)$
+$$
+cor(X,Y) = \frac{cov(X,Y)}{\sqrt{var(X)} \sqrt{var(Y)}}
+$$
+
+\pause
+Assuming that $X$ and $Y$ are mean-centered, and represented by 
+$\mathbf{x}$ and $\mathbf{y}$, respectively, the covariance can be expressed as:
+$$
+cor(\mathbf{x}, \mathbf{y}) = \frac{\mathbf{x^{\mathsf{T}} y}}{\sqrt{\mathbf{x^\mathsf{T} x}} \sqrt{\mathbf{y^\mathsf{T} y}}} = \frac{\mathbf{x^{\mathsf{T}} y}}{\| \mathbf{x} \| \hspace{1mm} \| \mathbf{y} \|}
+$$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Correlation: Geometric Interpretation}
+
+What does it mean geometrically:
+$$
+cor(\mathbf{x}, \mathbf{y}) = \frac{\mathbf{x^{\mathsf{T}} y}}{\| \mathbf{x} \| \hspace{1mm} \| \mathbf{y} \|}
+$$
+
+{\lit Hint: recall the angle between two vectors.}
+
+\bigskip
+You can think of the correlation between two variables as the cosine of the 
+angle between two vectors.
+
+\end{frame}
+
+%------------------------------------------------
+
+\end{document}
