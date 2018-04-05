@@ -1,19 +1,12 @@
-## Introduction to Statistical Learning
+## Concepts of Matrix Algebra for Statistical Learning
 
-This repository holds materials for an introductory course in Statistical Learning.
+This repository holds __supporting__ materials for an introductory course in Statistical Learning.
 
 
 
 ### Prerequisites / Review
 
-- Multivariate calculus or the equivalent, esp. partial derivatives.
-- Linear algebra or the equivalent (matrices, vector spaces).
-- Statistical inference or the equivalent.
-- Scripting experience in R required.
-
-The material assume that you are familiar with concepts of matrix algebra. In particular, you should be comfortable with notions such as vector spaces, inner products, norms, matrix products/transpose/rank/determinants/inverses, as well as matrix decompositions. 
-
-You should also have some scripting experience---preferably in R---at the level of writing functions, conditionals (if-then-else structures), for loops, while loops, sampling, read in data sets, export results.
+The materials cover concepts of matrix algebra. In particular, basic notions such as vector spaces, inner products, norms, matrix products/transpose/rank/determinants/inverses, as well as matrix decompositions. 
 
 
 
