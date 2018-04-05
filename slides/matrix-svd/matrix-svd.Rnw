@@ -1,0 +1,760 @@
+\documentclass[12pt]{beamer}
+\usepackage{tikz}
+
+% make it pretty
+\input{../header.tex}
+
+%------------------------------------------------
+
+\title{Singular Value Decomposition (SVD)}
+\subtitle{Matrix Algebra 4 Statistical Learning}
+\author{\href{http://www.gastonsanchez.com}{Gaston Sanchez}}
+\institute{\href{https://creativecommons.org/licenses/by-sa/4.0/}{\tt \scriptsize \color{foreground} CC BY-SA 4.0}}
+\date{}
+
+\begin{document}
+
+<<setup, include=FALSE>>=
+# smaller font size for chunks
+opts_chunk$set(size = 'footnotesize')
+options(width=87)
+@
+
+% no page number in first slide
+{
+  \setbeamertemplate{footline}{} 
+  \frame{\titlepage} 
+}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Introduction}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Two Special Decompositions}
+
+Last time we talked about the Eigen Value Decomposition (EVD).
+
+\bigskip
+In these slides, we'll talk about a closely related decomposition of EVD:
+the so-called {\hilit Singular Value Decomposition (SVD)}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{Recap}
+
+Matrix decompositions, also known as matrix factorizations
+
+{\Large
+$$
+\mathbf{M = A B} \qquad \text{or} \qquad \mathbf{M = A B C}
+$$
+}
+
+are a means of expressing a matrix as a product 
+of usually two or three {\hilit simpler} matrices.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Types of matrices}
+
+\bb{Two types of matrices}
+We said that in data analysis we typically concentrate on two types of matrices:
+\eb
+
+\bbi
+ \item general \textbf{rectangular} matrices used to represent data tables.
+ \item \textbf{positive semi-definite} matrices used to represent covariance matrices, 
+correlation matrices, and any matrix that results from a crossproduct.
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD}
+
+\bb{Singular Value Decomposition}
+\bbi
+  \item One of the most important decompositions in matrix algebra
+  \item Can be applied to {\hilit \textbf{any}} rectangular matrix
+  \item ANY: rectangular or square, singular or nonsigular.
+\ei
+\eb
+
+\end{frame}
+
+%------------------------------------------------
+  
+\begin{frame}
+\frametitle{Singular Value Decomposition}
+
+Let $\mathbf{M}$ be an $n \times p$ matrix.
+
+\bigskip
+For convenience, let's also assume that
+$\mathbf{M}$ is a "tall" matrix with $n > p$, although this is not essential.
+
+\bigskip
+Likewise, let's assume for the moment that the rank of $\mathbf{M}$ is $r \leq p < n$
+
+\end{frame}
+
+%------------------------------------------------
+  
+\begin{frame}
+\frametitle{Singular Value Decomposition}
+
+We can represent $\mathbf{M}$ as a triple product given by:
+
+$$ 
+\mathbf{M = U D V^\mathsf{T}}
+$$
+
+where
+\bi
+ \item $\mathbf{U}$ is a $n \times r$ matrix which is \textbf{orthonormal} by columns:
+ $\mathbf{U^\mathsf{T} U} = \mathbf{I}_r$
+ \item $\mathbf{D}$ is a $r \times r$ \textbf{diagonal} matrix consisting of $r$ positive diagonal entries.
+ \item $\mathbf{V}$ is a $p \times r$ matrix which is \textbf{orthonormal} by columns:
+ $\mathbf{V^\mathsf{T} V} = \mathbf{I}_r$
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+  
+\begin{frame}
+\frametitle{Singular Value Decomposition}
+
+The representation of $\mathbf{M}$ as the triple product $\mathbf{U D V^\mathsf{T}}$
+is called its {\mdlit \textit{singular value decomposition}}, occasionally
+referred to as ``basic structure''.
+
+\bigskip
+
+\bbi
+ \item $\mathbf{U}$ is the matrix of \textbf{left singular vectors} of $\mathbf{M}$
+ \item $\mathbf{D}$ is the matrix of \textbf{singular values} of $\mathbf{M}$
+ \item $\mathbf{V}$ is the matrix of \textbf{right singular vectors} of $\mathbf{M}$
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD}
+
+$$
+\mathbf{M = U D V^\mathsf{T}}
+$$
+
+$$
+\mathbf{M} = 
+\
+\begin{bmatrix} 
+u_{11} & \cdots & u_{1r} \\
+u_{21} & \cdots & u_{2r} \\
+\vdots & \ddots & \vdots \\
+u_{n1} & \cdots & u_{nr} \\
+\end{bmatrix}
+\
+\begin{bmatrix} 
+l_1 & \cdots & 0 \\ 
+\vdots & \ddots & \vdots \\
+0 & \cdots & l_r \\
+\end{bmatrix}
+\
+\begin{bmatrix} 
+v_{11} & \cdots & v_{p1} \\
+\vdots & \ddots & \vdots \\
+v_{1r} & \cdots & v_{pr} \\
+\end{bmatrix}
+$$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD Diagram}
+\begin{center}
+\ig[width=10cm]{images/svd-decomposition2.pdf}
+
+{\lolit When $\mathbf{M}$ is of rank $r < p$}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD Diagram}
+\begin{center}
+\ig[width=10cm]{images/svd-decomposition1.pdf}
+
+{\lolit When $\mathbf{M}$ is of full rank $p$}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{About SVD}
+
+\bb{Singular Value Decomposition}
+We can think of the SVD structure as \textit{the basic structure of a matrix}. 
+What do we mean by ``basic''? Well, this has to do with what each of the matrices 
+$\mathbf{U D V^\mathsf{T}}$ represent.
+\eb
+
+\bi
+  \item $\mathbf{U}$ is the orthonormalized matrix which is the most basic component. It's like the skeleton of the matrix.
+  \item $\mathbf{D}$ is referred to as the \textit{spectrum} and it is a scale component.
+  \item $\mathbf{V}$ is an orientation component, also referred to as
+  the \textit{rotation} matrix.
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+  
+\begin{frame}
+\frametitle{About SVD}
+
+Note that: 
+
+\bbi
+ \item $\mathbf{U}$ cannot be orthogonal ($\mathbf{U U^\mathsf{T} = I_n}$) unless
+$r = p$
+ \item $\mathbf{V}$ cannot be orthogonal ($\mathbf{V V^\mathsf{T} = I_p}$) unless $r = p = m$
+ \item All elements of $\mathbf{D}$ can be taken to be positive, 
+ ordered from large to small (with ties allowed)
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+  
+\begin{frame}
+\frametitle{Full SVD}
+
+If we let $\mathbf{D}$ be the first $r$ rows and $r$ columns embedded in a (larger)
+$n \times p$ \textit{rectangular} matrix, with $n - r$ rows and $p - r$ columns of zeros
+elsewhere, both $\mathbf{U}$ and $\mathbf{V^\mathsf{T}}$ could be made fully orthogonal and,
+in this sense, properly constitute rotation matrices of order $n \times n$ and $p \times p$,
+respectively. This generalization can be called the {\hilit full SVD} of a matrix.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{``Full'' SVD Diagram}
+\begin{center}
+\ig[width=10cm]{images/svd-decomposition3.pdf}
+
+{\lolit When $\mathbf{M}$ is of rank $r \leq p$}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+  
+\begin{frame}
+\frametitle{About SVD}
+
+The preceding generalization is a significant one. It tells us that ANY matrix
+with real-valued entries can be represented as the product of:
+
+\bbi
+ \item a rotation (possibly followed by a reflection), followed by
+ \item a stretch, followed by
+ \item a rotation
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD}
+
+\bbi
+  \item $\mathbf{U}$ is unitary, and its columns form a basis for the space spanned by the columns of $\mathbf{M}$. \\
+  $$
+  \mathbf{U^\mathsf{T} U} = \mathbf{I}_{p}
+  $$
+  \item $\mathbf{V}$ is unitary, and its columns form a basis for the space spanned by the rows of $\mathbf{M}$. \\
+  $$
+  \mathbf{V^\mathsf{T} V} = \mathbf{I}_{p}
+  $$
+  \item $\mathbf{D}$ has non-negative real numbers on the diagonal (assuming $\mathbf{M}$ is real).
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{SVD in R}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{\texttt{svd()} in R}
+\begin{block}{\texttt{svd()} function}
+R provides the function {\hilit \code{svd()}} to perform a 
+singular value decomposition of a given matrix
+\end{block}
+
+\bb{\texttt{svd()} output}
+A list with the following components
+\bi
+ \item[\code{d}] a vector containing the singular values
+ \item[\code{u}] a matrix whose columns contain the left singular vectors
+ \item[\code{v}] a matrix whose columns contain the right singular vectors
+\ei
+\eb
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{SVD example in R}
+
+<<Xsvd, tidy=FALSE, size='scriptsize'>>=
+# X matrix
+set.seed(22)
+X = matrix(rnorm(20), 5, 4)
+
+# singular value decomposition
+SVD = svd(X)
+
+# elements returned by svd()
+names(SVD)
+
+# vector of singular values
+(d = SVD$d)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{SVD example in R (con't)}
+
+<<svd_UV, tidy=FALSE, size='scriptsize'>>=
+# matrix of left singular vectors
+(U = SVD$u)
+
+# matrix of right singular vectors
+(V = SVD$v)
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{SVD example in R (con't)}
+
+<<svd_UV_orthonormal, tidy=FALSE, size='scriptsize'>>=
+# U orthonormal  (U'U = I)
+t(U) %*% U
+
+# V orthonormal  (V'V = I)
+t(V) %*% V
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}[fragile]
+\frametitle{SVD example in R (con't)}
+
+<<svd_test, tidy=FALSE, size='scriptsize'>>=
+# X equals U D V'
+U %*% diag(d) %*% t(V)
+
+# compare to X
+X
+@
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{SVD and Cross-products}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Data Matrix}
+
+\begin{block}{Data}
+The analyzed data can be expressed in matrix format $\mathbf{X}$:
+
+\[ \underset{n \times p}{\mathbf{X}} = 
+\left[\begin{array}{cccc}
+x_{11} & x_{12} & \cdots & x_{1p} \\
+x_{21} & x_{22} & \cdots & x_{2p} \\
+\vdots & \vdots & \ddots & \vdots \\
+x_{n1} & x_{n2} & \cdots & x_{np} \\
+\end{array}\right]
+\]
+\end{block}
+
+\begin{itemize}
+ \item $n$ objects in the rows
+ \item $p$ variables in the columns
+\end{itemize}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Relation of SVD and Cross-Product Matrices}
+
+The cross-product matrix of columns of $\mathbf{X}$ can be expressed as:
+
+{\Large
+$$
+\mathbf{X^\mathsf{T}X = V D^2 V^\mathsf{T}}
+$$
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Relation of SVD and Cross-Product Matrices}
+
+The cross-product matrix of columns can be expressed as:
+
+{\large
+\begin{align*}
+\mathbf{X^\mathsf{T} X} &= (\mathbf{U D V^\mathsf{T}})^\mathsf{T} (\mathbf{U D V^\mathsf{T}}) \\
+&= (\mathbf{V D U^\mathsf{T}}) (\mathbf{U D V^\mathsf{T}}) \\
+&= \mathbf{V D} (\mathbf{U^\mathsf{T}} \mathbf{U}) \mathbf{D V^\mathsf{T}} \\
+&= \mathbf{V D^2 V^\mathsf{T}}
+\end{align*}
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Relation of SVD and Cross-Product Matrices}
+
+The cross-product matrix of rows of $\mathbf{X}$ can be expressed as:
+
+{\Large
+$$
+\mathbf{XX^\mathsf{T} = U D^2 U^\mathsf{T}}
+$$
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Relation of SVD and Cross-Product Matrices}
+
+The cross-product matrix of rows can be expressed as:
+
+{\large
+\begin{align*}
+\mathbf{X X^\mathsf{T}} &= (\mathbf{U D V^\mathsf{T}}) (\mathbf{U D V^\mathsf{T}})^\mathsf{T} \\
+&= (\mathbf{U D V^\mathsf{T}}) (\mathbf{V D U^\mathsf{T}}) \\
+&= \mathbf{U D} (\mathbf{V^\mathsf{T}} \mathbf{V}) \mathbf{D U^\mathsf{T}} \\
+&= \mathbf{U D^2 U^\mathsf{T}}
+\end{align*}
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Relation of SVD and Cross-Product Matrices}
+
+One of the interesting things about SVD is that $\mathbf{U}$ and $\mathbf{V}$ are 
+matrices whose columns are eigenvectors of product moment matrices that are 
+\textit{derived} from $\mathbf{X}$. Specifically, 
+
+\bi
+  \item $\mathbf{U}$ is the matrix of eigenvectors of (symmetric) $\mathbf{XX^\mathsf{T}}$ of order $n \times n$
+  \item $\mathbf{V}$ is the matrix of eigenvectors of (symmetric) $\mathbf{X^\mathsf{T}X}$ 
+of oreder $p \times p$
+\ei
+
+Of additional interest is the fact that $\mathbf{D}$ is a diagonal matrix whose 
+main diagonal entries are the square roots of $\mathbf{\Lambda}$, the \textit{common} 
+matrix of eigenvalues of $\mathbf{XX^\mathsf{T}}$ and $\mathbf{X^\mathsf{T}X}$.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Relation between EVD and SVD}
+
+The EVD of the cross-product matrix of columns (or minor product moment) 
+$\mathbf{X^\mathsf{T} X}$ can be expressed as:
+
+{\large
+$$
+\mathbf{X^\mathsf{T} X} = \mathbf{V \Lambda V^\mathsf{T}}
+$$
+}
+
+in terms of the SVD factorization of $\mathbf{X}$:
+{\large
+$$
+\mathbf{X^\mathsf{T} X} = \mathbf{V D^2 V^\mathsf{T}}
+$$
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Relation between EVD and SVD}
+
+The EVD of the cross-product matrix of rows (or major product moment)
+$\mathbf{X X^\mathsf{T}}$ can be expressed as:
+
+{\large
+$$
+\mathbf{X X^\mathsf{T}} = \mathbf{U \Lambda U^\mathsf{T}}
+$$
+}
+
+in terms of the SVD factorization of $\mathbf{X}$:
+{\large
+$$
+\mathbf{X X^\mathsf{T}} = \mathbf{U D^2 U^\mathsf{T}}
+$$
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\begin{center}
+\Huge{\hilit{Rank Reduction}}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD Rank-Reduction Theorem}
+
+In terms of the diagonal elements $l_1, l_2, \dots, l_r$ of 
+$\mathbf{D}$, the columns $\mathbf{u_1}, \dots, \mathbf{u_r}$ of 
+$\mathbf{U}$, and the columns $\mathbf{v_1}, \dots, \mathbf{v_r}$ of 
+$\mathbf{V}$, the basic structure of $\mathbf{X}$ may be written as
+
+{\large
+$$
+\mathbf{X} = l_1 \mathbf{u_1 v^\mathsf{T}_1} + l_2 \mathbf{u_2 v^\mathsf{T}_2} 
++ \dots + l_p \mathbf{u_r v^\mathsf{T}_r}
+$$
+}
+
+which shows that the matrix $\mathbf{X}$ of rank $p$ is a linear combination 
+of $r$ matrices of rank 1.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD Rank-Reduction Theorem}
+
+A very interesting and alternative way to represent the SVD is with the 
+following formula:
+
+{\Large
+$$
+\mathbf{X} = \sum_{k=1}^{r} l_k \mathbf{u_k} \mathbf{v_{k}^{\mathsf{T}}}
+$$
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD Diagram}
+\begin{center}
+\ig[width=11cm]{images/svd-rank-one.pdf}
+
+{\lolit SVD as sum of rank one matrices (assuming $r = p$)}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD Rank-Reduction Theorem}
+
+SVD alternative formula:
+
+$$
+\mathbf{X} = \sum_{k=1}^{r} l_k \mathbf{u_k} \mathbf{v_{k}^{\mathsf{T}}}
+$$
+
+\bi
+  \item This expresses the SVD as a sum of $r$ rank-1 matrices.
+  \item This result is formalized in what is known as the \textbf{SVD theorem} 
+  described by Carl Eckart and Gale Young in 1936, and it is often referred to 
+  as the \textit{Eckart-Young theorem}.
+  \item This theorem applies to practically any arbitrary rectangular matrix. 
+\ei
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD Rank-Reduction Theorem}
+
+\begin{center}
+What if you take $m < r$ terms?
+
+{\large
+$$
+\mathbf{\hat{X}} = \sum_{k=1}^{m} l_k \mathbf{u_k} \mathbf{v_{k}^{\mathsf{T}}}
+$$
+}
+
+{\lit How would $\mathbf{\hat{X}}$ compare to $\mathbf{X}$?}
+\end{center}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD Rank-Reduction Theorem}
+
+The SVD theorem of Eckart and Young is related to the important problem of 
+approximating a matrix.
+
+\bigskip
+The basic result says that if $\mathbf{X}$ is an 
+$n \times p$ rectangular matrix, then the best $r$-dimensional approximation 
+$\hat{\mathbf{X}}$ to $\mathbf{X}$ is obtained by minimizing:
+
+{\large
+$$
+min \quad \| \mathbf{X - \hat{X}} \|^2
+$$
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD Rank-Reduction Theorem}
+
+The minimization problem:
+
+{\large
+$$
+min \quad \| \mathbf{X - \hat{X}} \|^2
+$$
+}
+
+is a special type of approximation: a least squares approximation. 
+
+\bigskip
+The solution is obtained by taking the first $m$ elements of matrices 
+$\mathbf{U, D, V}$ so that $\mathbf{\hat{X} = U_m D_m V^\mathsf{T}_m}$
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD rank-two approximation}
+\begin{center}
+\ig[width=11cm]{images/svd-rank-two.pdf}
+
+{\lolit SVD as sum of two rank one matrices}
+\end{center}
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{SVD Rank-Reduction Theorem}
+
+The best 2-rank approximation $\mathbf{\hat{X}}$ of $\mathbf{X}$ is given by:
+
+{\large
+$$
+\mathbf{\hat{X}} = l_1 \mathbf{u_1 v^\mathsf{T}_1} + l_2 \mathbf{u_2 v^\mathsf{T}_2}
+$$
+}
+
+We can say that the ``information'' contained in $n \times p$ values is compressed into 
+$n \times 2$ values.
+
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{References}
+
+{\footnotesize
+\bi
+  \item \textbf{Multivariate Analysis} by Maurice Tatsuoka (1988).
+  \textit{Chapter 5: More Matrix Algebra}. Macmillan Publishing.
+  \item \textbf{Mathematical Tools for Applied Multivariate Analysis} by J.D. Carroll, P.E. Green, and A. Chaturvedi (1997). 
+  \textit{Chapter 5: Decomposition of Matrix Transformations: Eigenstructures and Quadratic Forms}. Academic Press. 
+  \item \textbf{Principal Component Analysis} by Ian Jolliffe (2002). 
+  \textit{Chapter 3, Section 3.5: The Singular Value Decomposition}. Springer.
+  \item \textbf{Hands-on Matrix Algebra using R} by Hrishikesh Vinod (2011).
+  \textit{Chapter 12: Kronecker Products and Singular Value Decomposition}. World Scientific.
+\ei
+}
+
+\end{frame}
+
+%------------------------------------------------
+
+\end{document}
