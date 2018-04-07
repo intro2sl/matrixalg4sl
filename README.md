@@ -1,6 +1,6 @@
 ## Concepts of Matrix Algebra for Statistical Learning
 
-This repository holds __supporting__ materials for an introductory course in Statistical Learning.
+This repository holds __supporting__ materials for an introductory course in [Statistical Learning](https://github.com/intro2sl/statlearning).
 
 
 
