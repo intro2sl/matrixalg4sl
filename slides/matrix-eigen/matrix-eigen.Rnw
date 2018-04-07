@@ -521,7 +521,12 @@ $$
 \sum_{i = 1}^{n} \lambda_i = \sum_{i = 1}^{n} a_{ii}
 $$
 
-\bigskip
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Properties of Eigenstructures}
 
 {\mdlit \textbf{2.}} The product of the eigenvalues of a matrix $\mathbf{A}$ equals the 
 determinant of $\mathbf{A}$
@@ -547,7 +552,12 @@ $$
 
 where $\lambda_i$ is the $i$-th eigenvalue of $\mathbf{A}$
 
-\bigskip
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Properties of Eigenstructures}
 
 {\mdlit \textbf{4.}} If we have the matrix $\mathbf{C} = k \mathbf{A}$, where $k$ is a scalar, then
 $\mathbf{C}$ has the same eigenvectors as $\mathbf{A}$ and
@@ -577,7 +587,12 @@ $$
 is the $i$-th eigenvalue of $\mathbf{A}^{p}$, where $\lambda_i$ is the $i$-th 
 eigenvalue of $\mathbf{A}$
 
-\bigskip
+\end{frame}
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Properties of Eigenstructures}
 
 {\mdlit \textbf{6.}} If $\mathbf{A}^{-1}$ exists, then $\mathbf{A}^{-p}$ has the same 
 eigenvectors as $\mathbf{A}$ and
@@ -640,325 +655,7 @@ and it is the case that $\mathbf{A}^{-1/2} \mathbf{A}^{-1/2} = \mathbf{A}^{-1}$
 %------------------------------------------------
 
 \begin{frame}
-\begin{center}
-\Huge{\hilit{Power Method}}
-\end{center}
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{About the Power Method}
-
-One of the basic procedures following a successive approximation 
-approach is precisely the {\hilit Power Method}.
-
-\bigskip
-In its simplest form, the Power Method (PM) allows us to find \textbf{the largest} 
-eigenvector and its corresponding eigenvalue.
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{About the Power Method}
-
-Choose an arbitrary vector $\mathbf{w_0}$ to which we will apply the symmetric matrix 
-$\mathbf{S}$ repeatedly to form the following sequence:
-
-\begin{align*}
- \mathbf{w_1} &= \mathbf{S w_0} \\
- \mathbf{w_2} &= \mathbf{S w_1 = S^2 w_0} \\
- \mathbf{w_3} &= \mathbf{S w_2 = S^3 w_0} \\
- \vdots \\
- \mathbf{w_k} &= \mathbf{S w_{k-1} = S^k w_0}
-\end{align*}
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}[fragile]
-\frametitle{Power Method: Example}
-
-Consider a matrix $\mathbf{S}$
-$$
-\mathbf{S} =
-\begin{bmatrix}
-3 & 1 \\
-1 & 2 \\
-\end{bmatrix}
-$$
-
-\bigskip
-and an initial vector $\mathbf{w_0}$
-$$
-\mathbf{w_0} =
-\begin{bmatrix}
--0.4 \\
-1.3 \\
-\end{bmatrix}
-$$
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}[fragile]
-
-<<power-method-example, fig.width=6, fig.height=4, fig.align='center', fig.pos='h', echo=FALSE, message=FALSE>>=
-library(car)
-library(RColorBrewer)
-
-a <- matrix(c(3, 1, 1, 2), 2, 2)
-x <- y <- c(-1.5, 3)
-
-op = par(mar = c(2, 2, 1, 1))
-plot(x, y, xlim = c(-2,4), ylim = c(-1, 3), 
-     type = "n", axes = FALSE)
-axis(side = 1, pos = -1, col = "gray50", col.ticks = "gray50", 
-     col.axis = "gray50")
-axis(side = 2, pos = -2, las = 2, col = "gray50", 
-     col.ticks = "gray50", col.axis = "gray50")
-segments(0, -1, 0, 3, col = "gray80", lwd = 1.5)
-segments(-2, 0, 4, 0, col = "gray80", lwd = 1.5)
-ellipse(c(0, 0), diag(2), 1, col = "gray80", center.cex = 0)
-u <- c(-0.4, 1.3)
-r = brewer.pal(n=8, name="Blues")[3:8]
-for (i in 1:6) {
-  arrows(0, 0, u[1], u[2], col = r[i], length = 0.15, lwd = 2)
-  u <- u / sqrt(sum(u*u))
-  v <- colSums(u*a)
-  arrows(0, 0, v[1], v[2], col = r[i], length = 0.15, lwd = 2)
-  u <- v
-}
-text(x = -0.4, y = 1.3, expression(w[0]), col = r[1], pos = 3, cex = 1.3)
-text(x = v[1], y = v[2], expression(w[k]), col = r[6], pos = 4, cex = 1.3)
-par(op)
-@
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{About the Power Method}
-
-\bbi
-  \item In practice, we must rescale the obtained vector $\mathbf{w_k}$ at each step.
-  \item The rescaling will allows us to judge whether the sequence is converging.
-  \item After some iterations, the vector $\mathbf{w_{k-1}}$ and $\mathbf{w_k}$ will be very similar
-  \item Assuming a reasonable scaling strategy, the sequence will usually converge 
-  to the dominant eigenvector of $\mathbf{S}$.
-\ei
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}[fragile]
-
-<<power-method-rescale, fig.width=6, fig.height=4, fig.align='center', fig.pos='h', echo=FALSE, message=FALSE>>=
-a <- matrix(c(3, 1, 1, 2), 2, 2)
-x <- y <- c(-1.5, 3)
-
-op = par(mar = c(2, 2, 1, 1))
-plot(x, y, xlim = c(-2,4), ylim = c(-1, 3), 
-     type = "n", axes = FALSE)
-axis(side = 1, pos = -1, col = "gray70", col.ticks = "gray70", 
-     col.axis = "gray70")
-axis(side = 2, pos = -2, las = 2, col = "gray70", 
-     col.ticks = "gray70", col.axis = "gray70")
-segments(0, -1, 0, 3, col = "gray70", lwd = 1.5)
-segments(-2, 0, 4, 0, col = "gray70", lwd = 1.5)
-ellipse(c(0, 0), diag(2), 1, col = "gray70", center.cex = 0)
-u <- c(-0.4, 1.3)
-r = brewer.pal(n=8, name="Blues")[3:8]
-arrows(0, 0, u[1], u[2], col = r[1], length = 0.1, lwd = 1, lty = 2)
-for (i in 1:6) {
-  u <- u / sqrt(sum(u*u))
-  v <- colSums(u*a)
-  arrows(0, 0, u[1], u[2], col = r[i], length = 0.1, lwd = 3)
-  arrows(0, 0, v[1], v[2], col = r[i], length = 0.1, lwd = 2, lty = 2)
-  u <- v
-}
-text(x = -0.35, y = 1, expression(w[0]), col = r[1], pos = 2, cex = 1.3)
-text(x = 0.84, y = 0.45, expression(w[k]), col = r[6], pos = 4, cex = 1.3)
-par(op)
-@
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Dominant Eigenvalue}
-
-The obtained vector is the dominant eigenvector. To get the 
-corresponding eigenvalue we calculate the so-called \textbf{Rayleigh quotient}
-given by:
-
-{\Large
-$$
-\lambda = \frac{\mathbf{w_{k}^{\mathsf{T}} S w_k}}{\mathbf{w_{k}^{\mathsf{T}} w_k}}
-$$
-}
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Remarks}
-
-Conditions for the power method to be succesfully used: 
-\bbi
-  \item The matrix must have a \textit{dominant} eigenvalue. 
-  \item The starting vector $\mathbf{w_0}$ must be nonzero. 
-  \item We need to scale each of the vectors $\mathbf{w_k}$ \\
-  {\lolit otherwise the algorithm will ``explode''}
-\ei
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{PM Pseudocode}
-
-Let's consider a more detailed version of the PM algorithm:
-\begin{enumerate}
-  \item Start with an arbitraty initial vector $\mathbf{w}$
-  \item Obtain product $\mathbf{\tilde{w} = S w}$
-  \item Normalize $\mathbf{\tilde{w}}$
-  $$
-  \text{e.g.} \quad \mathbf{w} = \frac{\mathbf{\tilde{w}}}{\| \mathbf{\tilde{w}} \|_{p=2}}
-  $$
-  \item Compare $\mathbf{w}$ with its previous version
-  \item Repeat steps 2 till 4 until convergence
-\end{enumerate}
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Why does the PM work?}
-
-Assume that the matrix $\mathbf{S}$ has $p$ eigenvalues 
-$\lambda_1, \lambda_2, \dots, \lambda_p$, and that they are ordered in 
-decreasing way $|\lambda_1| > |\lambda_2| \geq \dots \geq |\lambda_p|$.
-
-\bigskip
-Note that the first eigenvalue is strictly greater than the second one. This is 
-a very important assumption.
-
-\bigskip
-In the same way, we'll assume that the matrix $\mathbf{S}$ has $p$ linearly 
-independent vectors $\mathbf{u_1}, \dots, \mathbf{u_p}$ ordered in such a way 
-that $\mathbf{u_j}$ corresponds to $\lambda_j$. 
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Why does the PM work?}
-
-The initial vector $\mathbf{w_0}$ may be expressed as a linear combination of 
-$\mathbf{u_1}, \dots, \mathbf{u_p}$
-
-$$
-\mathbf{w_0} = a_1 \mathbf{u_1} + \dots + a_p \mathbf{u_p}
-$$
-
-At every step of the iterative process the vector $\mathbf{w_k}$ is given by:
-
-$$
-\mathbf{w_k} = a_1 \lambda_{1}^k \mathbf{u_1} + \dots + a_p \lambda_{p}^k \mathbf{u_p}
-$$
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Why does the PM work?}
-
-Since $\lambda_1$ is the dominant eigenvalue, the component in the direction of 
-$\mathbf{u_1}$ becomes relatively greater than the other components as $k$ 
-increases. If we knew $\lambda_1$ in advance, we could rescale at each step by 
-dividing by it to get:
-
-$$
-\left(\frac{1}{\lambda_{1}^k}\right) \mathbf{w_k}= a_1 \mathbf{u_1} + \dots + a_p \left(\frac{\lambda_{p}^k}{\lambda_{1}^k}\right) \mathbf{u_p}
-$$
-
-which converges to the eigenvector $a_1 \mathbf{u_1}$, provided that $a_1$ is nonzero.
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Why does the PM work?}
-
-Of course, in real life this scaling strategy is not possible---we 
-don't know $\lambda_1$. Consequenlty, the eigenvector is determined only up to 
-a constant multiple, which is not a concern since the really important thing is 
-the \textit{direction} not the length of the vector.
-
-\bigskip
-The speed of the convergence depends on how bigger $\lambda_1$ is respect with 
-to $\lambda_2$, and on the choice of the initial vector $\mathbf{w_0}$. If 
-$\lambda_1$ is not much larger than $\lambda_2$, then the convergence will be 
-slow.
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{More Remarks}
-
-\bbi
-  \item The power method is a sequential method.
-  \item We can obtain $\mathbf{w_1, w_2}$, and so on, step by step.
-  \item If we only need the first $k$ vectors, we can stop the procedure at the desired stage.
-\ei
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{Obtaining more eigenvectors?}
-
-For \textbf{symmetric} matrices, once we've obtained the first eigenvector 
-$\mathbf{w_1}$ and eigenvalue $\lambda_1$, we can compute the second eigenvector 
-by reducing the matrix $\mathbf{S}$ by the 
-amount explained by the first eigenvector. 
-
-\bigskip
-This operation of reduction is called \textbf{deflation} 
-and the residual matrix is obtained as:
-
-{\large
-$$
-\mathbf{S_1} = \mathbf{S} - \lambda_1 \mathbf{w_1 w_{1}^\mathsf{T}}
-$$
-}
-
-To get the second eigenvalue and its corresponding eigenvector, 
-we operate on $\mathbf{S_1}$ in the same way as the operations on $\mathbf{S}$.
-
-\end{frame}
-
-%------------------------------------------------
-
-\begin{frame}
-\frametitle{References}
+\frametitle{Bibliography}
 
 {\footnotesize
 \bi
