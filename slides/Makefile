@@ -15,3 +15,10 @@ eigen:
 
 svd:
 	cd matrix-svd && make
+
+power:
+	cd matrix-power-method && make
+
+inertia:
+	cd matrix-inertia && make
+
