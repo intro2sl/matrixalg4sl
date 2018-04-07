@@ -738,7 +738,7 @@ $n \times 2$ values.
 %------------------------------------------------
 
 \begin{frame}
-\frametitle{References}
+\frametitle{Bibliography}
 
 {\footnotesize
 \bi
